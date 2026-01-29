@@ -57,7 +57,7 @@ homebrew_casks:
       name: goreleaserbot
       email: goreleaser@chmouel.com
     homepage: "https://github.com/chmouel/go-better-html-coverage"
-    description: "Better HTML Go Coverage - Single-file HTML coverage reports for Go"
+    description: "A better HTML Go Coverage - Single-file HTML coverage reports for Go"
     license: Apache-2.0
     caveats: |
       On first run, macOS may block the binary. To remove the quarantine attribute:
@@ -72,5 +72,5 @@ aurs:
     optdepends:
       - xdg-utils
     homepage: "https://github.com/chmouel/go-better-html-coverage"
-    description: "Better HTML Go Coverage - Single-file HTML coverage reports for Go"
+    description: "A better HTML Go Coverage - Single-file HTML coverage reports for Go"
     license: Apache-2.0
