@@ -95,7 +95,7 @@ func Parse(profilePath, srcRoot string) (*model.CoverageData, error) {
 // FilterByPaths filters coverage data to only include files in the provided set.
 func FilterByPaths(data *model.CoverageData, allowed map[string]struct{}) *model.CoverageData {
 	if data == nil {
-		return data
+		return nil
 	}
 
 	filteredFiles := make([]model.FileData, 0, len(data.Files))

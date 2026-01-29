@@ -24,12 +24,17 @@ func main() {
 	)
 
 	flag.StringVar(&profilePath, "profile", "coverage.out", "coverage profile path")
-	flag.StringVar(&outputPath, "o", "coverage.html", "output HTML file")
+	flag.StringVar(&outputPath, "o", "-", "output HTML file")
 	flag.StringVar(&srcRoot, "src", ".", "source root directory")
 	flag.StringVar(&ref, "ref", "", "git ref or range to filter coverage")
 	flag.BoolVar(&noSyntax, "no-syntax", false, "disable syntax highlighting by default")
 	flag.BoolVar(&noOpen, "n", false, "do not open browser")
 	flag.Parse()
+
+	// if outputPath is "-", it means stdout then don't try to open browser
+	if outputPath == "-" {
+		noOpen = true
+	}
 
 	// Parse coverage data
 	data, err := parser.Parse(profilePath, srcRoot)
@@ -54,8 +59,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Printf("Coverage report written to %s\n", outputPath)
-	fmt.Printf("Coverage: %.1f%% (%d/%d lines)\n",
+	fmt.Fprintf(os.Stderr, "Coverage report written to %s\n", outputPath)
+	fmt.Fprintf(os.Stderr, "Coverage: %.1f%% (%d/%d lines)\n",
 		data.Summary.Percent,
 		data.Summary.CoveredLines,
 		data.Summary.TotalLines)
@@ -94,6 +99,7 @@ func gitChangedFiles(repoRoot, ref string) (map[string]struct{}, error) {
 		rangeSpec = ref + "^.." + ref
 	}
 
+	//nolint:gosec // G204: rangeSpec is from user input but used safely
 	cmd := exec.Command("git", "-C", repoRoot, "diff", "--name-only", "--diff-filter=ACMR", rangeSpec)
 	output, err := cmd.Output()
 	if err != nil {

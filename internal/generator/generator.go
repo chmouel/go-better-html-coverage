@@ -78,6 +78,14 @@ func Generate(data *model.CoverageData, outputPath string, opts Options) error {
 		return fmt.Errorf("executing template: %w", err)
 	}
 
+	if outputPath == "" || outputPath == "-" {
+		// stdout
+		if _, err := os.Stdout.Write(buf.Bytes()); err != nil {
+			return fmt.Errorf("writing to stdout: %w", err)
+		}
+		return nil
+	}
+
 	// Write output file
 	if err := os.WriteFile(outputPath, buf.Bytes(), 0o644); err != nil { //nolint:gosec // G306: HTML report should be readable
 		return fmt.Errorf("writing output file: %w", err)
