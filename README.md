@@ -19,6 +19,37 @@ Better HTML Go Coverage - Single-file HTML coverage reports for Go.
 
 ## Install
 
+### Homebrew (macOS)
+
+```shell
+brew tap chmouel/go-better-html-coverage https://github.com/chmouel/go-better-html-coverage
+brew install go-better-html-coverage --cask
+```
+
+#### macOS Gatekeeper
+
+macOS quarantines binaries downloaded from the internet. On first run you may
+see "Apple could not verify go-better-html-coverage". To resolve this:
+
+**Option 1:** Allow via System Settings
+
+1. Open System Settings > Privacy & Security
+2. Click "Open Anyway" next to the go-better-html-coverage warning
+
+**Option 2:** Remove the quarantine attribute
+
+```bash
+xattr -d com.apple.quarantine /opt/homebrew/bin/go-better-html-coverage
+```
+
+### [Arch](https://aur.archlinux.org/packages/go-better-html-coverage-bin)
+
+```shell
+yay -S go-better-html-coverage-bin
+```
+
+### Manual
+
 ```bash
 go install github.com/chmouel/go-better-html-coverage@latest
 ```
