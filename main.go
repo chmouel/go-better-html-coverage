@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/chmouel/go-better-html-coverage/internal/generator"
 	"github.com/chmouel/go-better-html-coverage/internal/parser"
@@ -17,6 +18,7 @@ func main() {
 		profilePath string
 		outputPath  string
 		srcRoot     string
+		ref         string
 		noSyntax    bool
 		noOpen      bool
 	)
@@ -24,6 +26,7 @@ func main() {
 	flag.StringVar(&profilePath, "profile", "coverage.out", "coverage profile path")
 	flag.StringVar(&outputPath, "o", "coverage.html", "output HTML file")
 	flag.StringVar(&srcRoot, "src", ".", "source root directory")
+	flag.StringVar(&ref, "ref", "", "git ref or range to filter coverage")
 	flag.BoolVar(&noSyntax, "no-syntax", false, "disable syntax highlighting by default")
 	flag.BoolVar(&noOpen, "n", false, "do not open browser")
 	flag.Parse()
@@ -33,6 +36,15 @@ func main() {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error parsing coverage: %v\n", err)
 		os.Exit(1)
+	}
+
+	if ref != "" {
+		changedFiles, err := gitChangedFiles(srcRoot, ref)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error resolving git changes: %v\n", err)
+			os.Exit(1)
+		}
+		data = parser.FilterByPaths(data, changedFiles)
 	}
 
 	// Generate HTML report
@@ -74,4 +86,35 @@ func openBrowser(path string) {
 		return
 	}
 	_ = cmd.Start()
+}
+
+func gitChangedFiles(repoRoot, ref string) (map[string]struct{}, error) {
+	rangeSpec := ref
+	if !strings.Contains(ref, "..") {
+		rangeSpec = ref + "^.." + ref
+	}
+
+	cmd := exec.Command("git", "-C", repoRoot, "diff", "--name-only", "--diff-filter=ACMR", rangeSpec)
+	output, err := cmd.Output()
+	if err != nil {
+		// Fallback for root commits (no parent)
+		if !strings.Contains(ref, "..") {
+			fallback := exec.Command("git", "-C", repoRoot, "show", "--pretty=", "--name-only", "--diff-filter=ACMR", ref)
+			output, err = fallback.Output()
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			return nil, err
+		}
+	}
+
+	files := make(map[string]struct{})
+	for _, line := range strings.Split(strings.TrimSpace(string(output)), "\n") {
+		if line == "" {
+			continue
+		}
+		files[line] = struct{}{}
+	}
+	return files, nil
 }

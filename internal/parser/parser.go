@@ -92,6 +92,50 @@ func Parse(profilePath, srcRoot string) (*model.CoverageData, error) {
 	}, nil
 }
 
+// FilterByPaths filters coverage data to only include files in the provided set.
+func FilterByPaths(data *model.CoverageData, allowed map[string]struct{}) *model.CoverageData {
+	if data == nil {
+		return data
+	}
+
+	filteredFiles := make([]model.FileData, 0, len(data.Files))
+	totalLines := 0
+	coveredLines := 0
+
+	for _, file := range data.Files {
+		if _, ok := allowed[file.Path]; !ok {
+			continue
+		}
+		file.ID = len(filteredFiles)
+		filteredFiles = append(filteredFiles, file)
+
+		for _, c := range file.Coverage {
+			if c > 0 {
+				totalLines++
+				if c == 2 {
+					coveredLines++
+				}
+			}
+		}
+	}
+
+	tree := buildTree(filteredFiles)
+	percent := 0.0
+	if totalLines > 0 {
+		percent = float64(coveredLines) / float64(totalLines) * 100
+	}
+
+	return &model.CoverageData{
+		Files: filteredFiles,
+		Tree:  tree,
+		Summary: model.Summary{
+			TotalLines:   totalLines,
+			CoveredLines: coveredLines,
+			Percent:      percent,
+		},
+	}
+}
+
 func detectModulePath(srcRoot string) (string, error) {
 	goModPath := filepath.Join(srcRoot, "go.mod")
 	f, err := os.Open(goModPath) //nolint:gosec // path is from srcRoot argument

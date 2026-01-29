@@ -403,3 +403,38 @@ func TestParseInvalidProfile(t *testing.T) {
 		t.Error("expected error for invalid coverage profile")
 	}
 }
+
+func TestFilterByPaths(t *testing.T) {
+	data := &model.CoverageData{
+		Files: []model.FileData{
+			{ID: 0, Path: "a.go", Coverage: []int{0, 2}},
+			{ID: 1, Path: "b.go", Coverage: []int{0, 1}},
+		},
+		Tree: &model.TreeNode{
+			Name: ".",
+			Type: "dir",
+		},
+		Summary: model.Summary{
+			TotalLines:   2,
+			CoveredLines: 1,
+			Percent:      50,
+		},
+	}
+
+	filtered := FilterByPaths(data, map[string]struct{}{"b.go": {}})
+	if len(filtered.Files) != 1 {
+		t.Fatalf("expected 1 file, got %d", len(filtered.Files))
+	}
+	if filtered.Files[0].Path != "b.go" {
+		t.Fatalf("expected b.go, got %s", filtered.Files[0].Path)
+	}
+	if filtered.Files[0].ID != 0 {
+		t.Fatalf("expected ID 0, got %d", filtered.Files[0].ID)
+	}
+	if filtered.Summary.TotalLines != 1 {
+		t.Fatalf("expected total lines 1, got %d", filtered.Summary.TotalLines)
+	}
+	if filtered.Summary.CoveredLines != 0 {
+		t.Fatalf("expected covered lines 0, got %d", filtered.Summary.CoveredLines)
+	}
+}
