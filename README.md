@@ -10,12 +10,11 @@ A better HTML Go Coverage - Single-file HTML coverage reports for Go.
 ## Features
 
 - Single self-contained HTML file
-- File tree with search (Ctrl+P)
-- In-file search with highlighting (Ctrl+F)
-- Syntax highlighting for Go code (via CDN)
-- Dark/light theme toggle
-- Keyboard shortcuts (press ? for help)
-- Auto-opens in browser
+- File tree with search - `Ctrl+P`
+- In-file search with highlighting - `Ctrl+F`
+- Syntax highlighting.
+- Deep linking to lines and ranges (click line numbers, shift+click for range)
+- Sort by coverage.
 - SVG badge generation for README/CI integration
 
 ## Install

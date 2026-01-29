@@ -80,7 +80,7 @@
                 />
               </svg>
               <div id="logo-text">
-                <h1>Coverage</h1>
+                <h1>GO Coverage</h1>
                 <div id="tagline">A better HTML Go Coverage</div>
               </div>
             </div>
@@ -91,11 +91,19 @@
           <input type="text" id="search-input" placeholder="Search files..." />
         </div>
         <div id="sort-controls">
-          <button class="sort-btn active" data-sort="name" title="Sort alphabetically">
+          <button
+            class="sort-btn active"
+            data-sort="name"
+            title="Sort alphabetically"
+          >
             <span class="icon">A→Z</span>
             <span class="label">Name</span>
           </button>
-          <button class="sort-btn" data-sort="coverage" title="Sort by coverage percentage">
+          <button
+            class="sort-btn"
+            data-sort="coverage"
+            title="Sort by coverage percentage"
+          >
             <span class="icon">%</span>
             <span class="label">Coverage</span>
           </button>
@@ -161,6 +169,13 @@
             <dd>Show this help</dd>
             <dt>Esc</dt>
             <dd>Close modal</dd>
+          </dl>
+          <h2>Permalinks</h2>
+          <dl>
+            <dt>Click line</dt>
+            <dd>Select line, update URL</dd>
+            <dt>Shift+Click</dt>
+            <dd>Select line range</dd>
           </dl>
           <button id="close-help">Close</button>
         </div>

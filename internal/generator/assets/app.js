@@ -13,6 +13,8 @@
   let expandedDirs = new Set();
   let syntaxHighlightEnabled = config.syntaxEnabled;
   let sortMode = 'name'; // 'name' or 'coverage'
+  let anchorLine = null;        // First line clicked (anchor for shift-select)
+  let selectedRange = null;     // { start: N, end: M } or null
 
   // DOM elements
   const fileTree = document.getElementById('file-tree');
@@ -119,12 +121,13 @@
     const hash = window.location.hash.slice(1);
     if (!hash) return null;
 
-    const match = hash.match(/^file-(\d+)(?::line-(\d+))?$/);
+    const match = hash.match(/^file-(\d+)(?::line-(\d+)(?:-(\d+))?)?$/);
     if (!match) return null;
 
     return {
       fileId: parseInt(match[1], 10),
-      line: match[2] ? parseInt(match[2], 10) : null
+      lineStart: match[2] ? parseInt(match[2], 10) : null,
+      lineEnd: match[3] ? parseInt(match[3], 10) : null
     };
   }
 
@@ -137,9 +140,13 @@
 
     selectFile(target.fileId);
 
-    if (target.line) {
+    if (target.lineStart) {
       requestAnimationFrame(() => {
-        scrollToLine(target.line);
+        const lineEnd = target.lineEnd || target.lineStart;
+        anchorLine = target.lineStart;
+        selectedRange = { start: target.lineStart, end: lineEnd };
+        selectLineRange(target.lineStart, lineEnd);
+        scrollToLine(target.lineStart);
       });
     }
 
@@ -152,14 +159,40 @@
     if (!lineEl) return;
 
     lineEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 
-    lineEl.classList.add('linked-line');
-    setTimeout(() => lineEl.classList.remove('linked-line'), 2000);
+  // Clear all selected lines
+  function clearLineSelection() {
+    document.querySelectorAll('.code-line.selected-line').forEach(el => {
+      el.classList.remove('selected-line');
+    });
+  }
+
+  // Select a range of lines (inclusive)
+  function selectLineRange(start, end) {
+    clearLineSelection();
+    const minLine = Math.min(start, end);
+    const maxLine = Math.max(start, end);
+    for (let i = minLine; i <= maxLine; i++) {
+      const lineEl = document.querySelector('.code-line[data-line="' + i + '"]');
+      if (lineEl) {
+        lineEl.classList.add('selected-line');
+      }
+    }
   }
 
   // Deep linking: update URL hash
-  function updateHash(fileId, line) {
-    const hash = line ? 'file-' + fileId + ':line-' + line : 'file-' + fileId;
+  function updateHash(fileId, lineStart, lineEnd) {
+    let hash = 'file-' + fileId;
+    if (lineStart) {
+      hash += ':line-' + lineStart;
+      if (lineEnd && lineEnd !== lineStart) {
+        // Normalise so start < end
+        const minLine = Math.min(lineStart, lineEnd);
+        const maxLine = Math.max(lineStart, lineEnd);
+        hash = 'file-' + fileId + ':line-' + minLine + '-' + maxLine;
+      }
+    }
     history.replaceState(null, '', '#' + hash);
   }
 
@@ -287,6 +320,8 @@
     matchInfo.textContent = '';
     contentSearch.value = '';
     contentSearchQuery = '';
+    anchorLine = null;
+    selectedRange = null;
 
     // Update selection in tree
     document.querySelectorAll('.tree-item.selected').forEach(el => {
@@ -345,14 +380,27 @@
       const lineNum = document.createElement('div');
       lineNum.className = 'line-number';
       lineNum.textContent = idx + 1;
-      lineNum.title = 'Click to copy link to this line';
+      lineNum.title = 'Click to select line, Shift+Click for range';
 
       // Add click handler for line number deep linking
       const lineNumber = idx + 1;
       lineNum.addEventListener('click', (e) => {
         e.stopPropagation();
-        updateHash(currentFileId, lineNumber);
-        scrollToLine(lineNumber);
+
+        if (e.shiftKey && anchorLine !== null) {
+          // Shift-click: select range from anchor to clicked line
+          const start = Math.min(anchorLine, lineNumber);
+          const end = Math.max(anchorLine, lineNumber);
+          selectedRange = { start: start, end: end };
+          selectLineRange(start, end);
+          updateHash(currentFileId, start, end);
+        } else {
+          // Regular click: set anchor and select single line
+          anchorLine = lineNumber;
+          selectedRange = { start: lineNumber, end: lineNumber };
+          selectLineRange(lineNumber, lineNumber);
+          updateHash(currentFileId, lineNumber, null);
+        }
       });
 
       const content = document.createElement('div');

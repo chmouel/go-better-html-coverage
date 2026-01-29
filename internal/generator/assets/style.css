@@ -635,14 +635,17 @@ html, body {
   width: 100%;
 }
 
-/* Deep linking highlight animation */
-.code-line.linked-line {
-  animation: highlight-fade 2s ease-out;
+/* Selected line range (multi-line selection) */
+.code-line.selected-line {
+  background-color: var(--highlight);
 }
 
-@keyframes highlight-fade {
-  0% { background-color: var(--accent); }
-  100% { background-color: transparent; }
+.code-line.selected-line.covered {
+  background-color: var(--highlight);
+}
+
+.code-line.selected-line.uncovered {
+  background-color: var(--highlight);
 }
 
 /* Line number click indicator */
