@@ -51,14 +51,17 @@ homebrew_casks:
   - name: go-better-html-coverage
     repository:
       owner: chmouel
-      name: homebrew-tap
-      token: "{{ .Env.GITHUB_TOKEN }}"
+      name: lazyworktree
+    directory: Casks
     commit_author:
       name: goreleaserbot
       email: goreleaser@chmouel.com
     homepage: "https://github.com/chmouel/go-better-html-coverage"
     description: "Better HTML Go Coverage - Single-file HTML coverage reports for Go"
     license: Apache-2.0
+    caveats: |
+      On first run, macOS may block the binary. To remove the quarantine attribute:
+        xattr -d com.apple.quarantine #{staged_path}/lazyworktree
 
 aurs:
   - name: go-better-html-coverage-bin
