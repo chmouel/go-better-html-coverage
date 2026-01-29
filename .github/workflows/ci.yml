@@ -24,6 +24,7 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version-file: "go.mod"
+          cache: true
 
       - uses: alexellis/setup-arkade@v3
       - uses: alexellis/arkade-get@master
