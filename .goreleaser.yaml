@@ -27,13 +27,6 @@ builds:
 
 archives:
   - name_template: "{{ .ProjectName }}-{{ .Version }}-{{ .Os }}-{{ .Arch }}"
-    format_overrides:
-      - goos: windows
-        format: zip
-      - goos: darwin
-        format: tar.gz
-      - goos: linux
-        format: tar.gz
     files:
       - README.md
       - LICENSE
@@ -54,7 +47,7 @@ changelog:
       - Merge pull request
       - Merge branch
 
-brews:
+homebrew_casks:
   - name: go-better-html-coverage
     repository:
       owner: chmouel
@@ -66,13 +59,11 @@ brews:
     homepage: "https://github.com/chmouel/go-better-html-coverage"
     description: "Better HTML Go Coverage - Single-file HTML coverage reports for Go"
     license: Apache-2.0
-    test: |
-      system "#{bin}/go-better-html-coverage --help"
 
 aurs:
   - name: go-better-html-coverage-bin
     git_url: ssh://aur@aur.archlinux.org/go-better-html-coverage-bin.git
-    private_key: "{{ .Env.AUR_SSH_PRIVATE_KEY }}"
+    private_key: "{{ .Env.AUR_PRIVATE_KEY }}"
     commit_author:
       name: goreleaserbot
       email: goreleaser@chmouel.com
