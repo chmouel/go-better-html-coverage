@@ -3,7 +3,7 @@ cask "go-better-html-coverage" do
   name "go-better-html-coverage"
   desc "A better HTML Go Coverage - Single-file HTML coverage reports for Go"
   homepage "https://github.com/chmouel/go-better-html-coverage"
-  version "1.1.0"
+  version "1.2.0"
 
   livecheck do
     skip "Auto-generated on release."
@@ -14,22 +14,22 @@ cask "go-better-html-coverage" do
   on_macos do
     on_intel do
       url "https://github.com/chmouel/go-better-html-coverage/releases/download/v#{version}/go-better-html-coverage-#{version}-darwin-amd64.tar.gz"
-      sha256 "532ccf7f232f730405057dbd486f29a768cbaa599d38eaa902cdccec3cf8864b"
+      sha256 "f94995b543a38db68938b68fd5c5251af2ba0257faa5f2143c801fddabcca1eb"
     end
     on_arm do
       url "https://github.com/chmouel/go-better-html-coverage/releases/download/v#{version}/go-better-html-coverage-#{version}-darwin-arm64.tar.gz"
-      sha256 "d1fb87bbd66408171b100d87160b2cedc120a9aa24a522878252868cc8fa6493"
+      sha256 "f8b9cf9a633eb66d1391e3c7003b3463922c1010cd2bcffe2c571b512b6bbe72"
     end
   end
 
   on_linux do
     on_intel do
       url "https://github.com/chmouel/go-better-html-coverage/releases/download/v#{version}/go-better-html-coverage-#{version}-linux-amd64.tar.gz"
-      sha256 "bf9eef352373e480970a921cb760a80b8165df5f53ac4efd9754999c73bc5af3"
+      sha256 "c8a92c24a70a2518be59955c57f1150c0ccbdf3a3ed04461f5d599f5c6000570"
     end
     on_arm do
       url "https://github.com/chmouel/go-better-html-coverage/releases/download/v#{version}/go-better-html-coverage-#{version}-linux-arm64.tar.gz"
-      sha256 "c7a5207a88a5673fd2f817fa8c3827457ab91ee58fb6268ebf05a4fe3a3d9851"
+      sha256 "ec59591cabd6b710149c0d11bb40f09d2519c8defe2f7dbd5dbbbf4fdbacc026"
     end
   end
 
