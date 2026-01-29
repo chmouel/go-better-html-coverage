@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coverage Report</title>
+  <style>{{.CSS}}</style>
+</head>
+<body data-theme="dark">
+  <div id="app">
+    <aside id="sidebar">
+      <div id="sidebar-header">
+        <h1>Coverage</h1>
+        <div id="summary"></div>
+      </div>
+      <div id="search-box">
+        <input type="text" id="search-input" placeholder="Search files..." />
+      </div>
+      <div id="file-tree"></div>
+    </aside>
+    <main id="canvas">
+      <header id="topbar">
+        <div id="file-path"></div>
+        <div id="topbar-actions">
+          <div id="in-file-search">
+            <input type="text" id="content-search" placeholder="Search in file..." />
+            <span id="match-info"></span>
+            <button id="prev-match" title="Previous match">&#9650;</button>
+            <button id="next-match" title="Next match">&#9660;</button>
+          </div>
+          <button id="theme-toggle" title="Toggle theme">&#9788;</button>
+        </div>
+      </header>
+      <div id="viewport"></div>
+    </main>
+  </div>
+  <script>window.COVERAGE_DATA = {{.DataJSON}};</script>
+  <script>{{.JS}}</script>
+</body>
+</html>
