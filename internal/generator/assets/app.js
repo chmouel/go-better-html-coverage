@@ -105,10 +105,62 @@
     loadTheme();
     loadSyntaxPreference();
 
-    // Select first file if available
-    if (data.files.length > 0) {
+    // Check for deep link hash first, otherwise select first file
+    if (!navigateToHash() && data.files.length > 0) {
       selectFile(0);
     }
+
+    // Listen for hash changes (browser back/forward)
+    window.addEventListener('hashchange', navigateToHash);
+  }
+
+  // Deep linking: parse URL hash
+  function parseHash() {
+    const hash = window.location.hash.slice(1);
+    if (!hash) return null;
+
+    const match = hash.match(/^file-(\d+)(?::line-(\d+))?$/);
+    if (!match) return null;
+
+    return {
+      fileId: parseInt(match[1], 10),
+      line: match[2] ? parseInt(match[2], 10) : null
+    };
+  }
+
+  // Deep linking: navigate to hash location
+  function navigateToHash() {
+    const target = parseHash();
+    if (!target) return false;
+
+    if (target.fileId < 0 || target.fileId >= data.files.length) return false;
+
+    selectFile(target.fileId);
+
+    if (target.line) {
+      requestAnimationFrame(() => {
+        scrollToLine(target.line);
+      });
+    }
+
+    return true;
+  }
+
+  // Deep linking: scroll to and highlight a line
+  function scrollToLine(lineNum) {
+    const lineEl = document.querySelector('.code-line[data-line="' + lineNum + '"]');
+    if (!lineEl) return;
+
+    lineEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    lineEl.classList.add('linked-line');
+    setTimeout(() => lineEl.classList.remove('linked-line'), 2000);
+  }
+
+  // Deep linking: update URL hash
+  function updateHash(fileId, line) {
+    const hash = line ? 'file-' + fileId + ':line-' + line : 'file-' + fileId;
+    history.replaceState(null, '', '#' + hash);
   }
 
   function renderSummary() {
@@ -250,6 +302,9 @@
 
     filePath.textContent = file.path;
     renderCode(file);
+
+    // Update URL hash for deep linking
+    updateHash(fileId, null);
   }
 
   function renderCode(file) {
@@ -290,6 +345,15 @@
       const lineNum = document.createElement('div');
       lineNum.className = 'line-number';
       lineNum.textContent = idx + 1;
+      lineNum.title = 'Click to copy link to this line';
+
+      // Add click handler for line number deep linking
+      const lineNumber = idx + 1;
+      lineNum.addEventListener('click', (e) => {
+        e.stopPropagation();
+        updateHash(currentFileId, lineNumber);
+        scrollToLine(lineNumber);
+      });
 
       const content = document.createElement('div');
       content.className = 'line-content';

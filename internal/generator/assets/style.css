@@ -634,3 +634,22 @@ html, body {
   cursor: pointer;
   width: 100%;
 }
+
+/* Deep linking highlight animation */
+.code-line.linked-line {
+  animation: highlight-fade 2s ease-out;
+}
+
+@keyframes highlight-fade {
+  0% { background-color: var(--accent); }
+  100% { background-color: transparent; }
+}
+
+/* Line number click indicator */
+.line-number {
+  cursor: pointer;
+}
+
+.line-number:hover {
+  color: var(--accent);
+}
