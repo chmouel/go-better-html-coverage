@@ -159,6 +159,58 @@ html, body {
   border-color: var(--accent);
 }
 
+/* Sort controls */
+#sort-controls {
+  display: flex;
+  gap: 0;
+  margin: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.sort-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 8px;
+  background: var(--bg-secondary);
+  color: var(--text);
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.sort-btn:hover {
+  background: var(--hover);
+}
+
+.sort-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.sort-btn .icon {
+  font-weight: 600;
+}
+
+.sort-btn .label {
+  font-size: 11px;
+}
+
+/* Coverage badges for directories */
+.coverage-badge {
+  margin-left: auto;
+  padding-left: 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+  font-family: var(--font-mono);
+}
+
 #file-tree {
   flex: 1;
   overflow-y: auto;
@@ -222,6 +274,8 @@ html, body {
   font-size: 13px;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
 }
 
 .tree-children {

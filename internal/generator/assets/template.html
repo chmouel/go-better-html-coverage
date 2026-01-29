@@ -90,6 +90,16 @@
         <div id="search-box">
           <input type="text" id="search-input" placeholder="Search files..." />
         </div>
+        <div id="sort-controls">
+          <button class="sort-btn active" data-sort="name" title="Sort alphabetically">
+            <span class="icon">A→Z</span>
+            <span class="label">Name</span>
+          </button>
+          <button class="sort-btn" data-sort="coverage" title="Sort by coverage percentage">
+            <span class="icon">%</span>
+            <span class="label">Coverage</span>
+          </button>
+        </div>
         <div id="file-tree"></div>
         <footer id="sidebar-footer">
           <a

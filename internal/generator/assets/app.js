@@ -12,6 +12,7 @@
   let currentMatchIndex = -1;
   let expandedDirs = new Set();
   let syntaxHighlightEnabled = config.syntaxEnabled;
+  let sortMode = 'name'; // 'name' or 'coverage'
 
   // DOM elements
   const fileTree = document.getElementById('file-tree');
@@ -29,8 +30,75 @@
   const closeHelp = document.getElementById('close-help');
   const helpToggle = document.getElementById('help-toggle');
 
+  // Coverage cache: fileId -> percentage
+  let coverageCache = new Map();
+
+  function initCoverageCache() {
+    data.files.forEach((file, idx) => {
+      coverageCache.set(idx, calculateFileCoverage(idx));
+    });
+  }
+
+  function calculateFileCoverage(fileId) {
+    const file = data.files[fileId];
+    let totalStatements = 0;
+    let coveredStatements = 0;
+
+    file.coverage.forEach(cov => {
+      if (cov > 0) totalStatements++;
+      if (cov === 2) coveredStatements++;
+    });
+
+    return totalStatements === 0 ? 0 : (coveredStatements / totalStatements) * 100;
+  }
+
+  function calculateDirectoryCoverage(node) {
+    if (node.type === 'file') {
+      return coverageCache.get(node.fileId) || 0;
+    }
+
+    let totalCoverage = 0;
+    let fileCount = 0;
+
+    node.children?.forEach(child => {
+      const childCov = calculateDirectoryCoverage(child);
+      totalCoverage += childCov;
+      fileCount++;
+    });
+
+    return fileCount === 0 ? 0 : totalCoverage / fileCount;
+  }
+
+  function sortTreeNodes(node, mode) {
+    if (!node.children || node.children.length === 0) return node;
+
+    // Deep copy to avoid mutating original
+    const sorted = { ...node };
+    sorted.children = [...node.children].map(child => sortTreeNodes(child, mode));
+
+    // Sort children
+    sorted.children.sort((a, b) => {
+      // Directories always first
+      if (a.type !== b.type) return a.type === 'dir' ? -1 : 1;
+
+      if (mode === 'coverage') {
+        const aCov = calculateDirectoryCoverage(a);
+        const bCov = calculateDirectoryCoverage(b);
+        console.log('Sorting:', a.name, '('+aCov.toFixed(1)+'%) vs', b.name, '('+bCov.toFixed(1)+'%)', '=', bCov - aCov);
+        // Descending: high coverage first
+        return aCov !== bCov ? bCov - aCov : a.name.localeCompare(b.name);
+      }
+
+      return a.name.localeCompare(b.name);
+    });
+
+    return sorted;
+  }
+
   // Initialize
   function init() {
+    initCoverageCache();
+    loadSortPreference();
     renderSummary();
     renderTree();
     setupEventListeners();
@@ -65,7 +133,8 @@
         }
       });
     }
-    renderNode(data.tree, fileTree, 0);
+    const sortedTree = sortTreeNodes(data.tree, sortMode);
+    renderNode(sortedTree, fileTree, 0);
   }
 
   function renderNode(node, container, depth) {
@@ -104,6 +173,13 @@
 
       item.appendChild(icon);
       item.appendChild(name);
+
+      // Add coverage badge to all directories
+      const badge = document.createElement('span');
+      badge.className = 'coverage-badge';
+      badge.textContent = calculateDirectoryCoverage(node).toFixed(1) + '%';
+      item.appendChild(badge);
+
       nodeEl.appendChild(item);
 
       if (node.children && node.children.length > 0) {
@@ -265,6 +341,17 @@
 
     // Syntax toggle
     syntaxToggle.addEventListener('click', toggleSyntax);
+
+    // Sort controls
+    const sortButtons = document.querySelectorAll('.sort-btn');
+    console.log('Found', sortButtons.length, 'sort buttons');
+    sortButtons.forEach(btn => {
+      console.log('Attaching click handler to button:', btn.dataset.sort);
+      btn.addEventListener('click', () => {
+        console.log('Sort button clicked:', btn.dataset.sort);
+        changeSortMode(btn.dataset.sort);
+      });
+    });
 
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
@@ -552,6 +639,34 @@
     }
     // Update button state
     syntaxToggle.classList.toggle('active', syntaxHighlightEnabled);
+  }
+
+  function changeSortMode(mode) {
+    if (sortMode === mode) return;
+
+    console.log('Changing sort mode from', sortMode, 'to', mode);
+    sortMode = mode;
+    localStorage.setItem('coverage-sort-mode', mode);
+
+    // Update button states
+    document.querySelectorAll('.sort-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.sort === mode);
+    });
+
+    // Re-render tree
+    renderTree();
+  }
+
+  function loadSortPreference() {
+    const saved = localStorage.getItem('coverage-sort-mode');
+    if (saved && (saved === 'name' || saved === 'coverage')) {
+      sortMode = saved;
+    }
+
+    // Update button states
+    document.querySelectorAll('.sort-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.sort === sortMode);
+    });
   }
 
   function showHelp() {
