@@ -18,10 +18,16 @@ type templateData struct {
 	CSS      template.CSS
 	JS       template.JS
 	DataJSON template.JS
+	Config   template.JS
+}
+
+// Options configures the HTML report generation.
+type Options struct {
+	NoSyntax bool // Disable syntax highlighting by default
 }
 
 // Generate creates an HTML coverage report and writes it to the output path.
-func Generate(data *model.CoverageData, outputPath string) error {
+func Generate(data *model.CoverageData, outputPath string, opts Options) error {
 	// Read assets
 	cssBytes, err := assets.ReadFile("assets/style.css")
 	if err != nil {
@@ -44,6 +50,15 @@ func Generate(data *model.CoverageData, outputPath string) error {
 		return fmt.Errorf("marshaling coverage data: %w", err)
 	}
 
+	// Build config JSON
+	config := map[string]interface{}{
+		"syntaxEnabled": !opts.NoSyntax,
+	}
+	configJSON, err := json.Marshal(config)
+	if err != nil {
+		return fmt.Errorf("marshaling config: %w", err)
+	}
+
 	// Parse and execute template
 	tmpl, err := template.New("coverage").Parse(string(htmlBytes))
 	if err != nil {
@@ -54,6 +69,7 @@ func Generate(data *model.CoverageData, outputPath string) error {
 		CSS:      template.CSS(cssBytes),
 		JS:       template.JS(jsBytes),
 		DataJSON: template.JS(dataJSON),
+		Config:   template.JS(configJSON),
 	}
 
 	var buf bytes.Buffer

@@ -2,6 +2,7 @@
   'use strict';
 
   const data = window.COVERAGE_DATA;
+  const config = window.COVERAGE_CONFIG || { syntaxEnabled: true };
 
   // State
   let currentFileId = null;
@@ -10,6 +11,7 @@
   let matches = [];
   let currentMatchIndex = -1;
   let expandedDirs = new Set();
+  let syntaxHighlightEnabled = config.syntaxEnabled;
 
   // DOM elements
   const fileTree = document.getElementById('file-tree');
@@ -22,6 +24,10 @@
   const prevMatch = document.getElementById('prev-match');
   const nextMatch = document.getElementById('next-match');
   const themeToggle = document.getElementById('theme-toggle');
+  const syntaxToggle = document.getElementById('syntax-toggle');
+  const helpModal = document.getElementById('help-modal');
+  const closeHelp = document.getElementById('close-help');
+  const helpToggle = document.getElementById('help-toggle');
 
   // Initialize
   function init() {
@@ -29,6 +35,7 @@
     renderTree();
     setupEventListeners();
     loadTheme();
+    loadSyntaxPreference();
 
     // Select first file if available
     if (data.files.length > 0) {
@@ -50,6 +57,14 @@
 
   function renderTree() {
     fileTree.textContent = '';
+    // Auto-expand all top-level directories
+    if (data.tree.children && data.tree.children.length > 0) {
+      data.tree.children.forEach(child => {
+        if (child.type === 'dir') {
+          expandedDirs.add(getNodePath(child, 0));
+        }
+      });
+    }
     renderNode(data.tree, fileTree, 0);
   }
 
@@ -204,6 +219,11 @@
     });
 
     viewport.appendChild(container);
+
+    // Apply syntax highlighting after rendering if enabled
+    if (syntaxHighlightEnabled) {
+      applySyntaxHighlighting();
+    }
   }
 
   function setupEventListeners() {
@@ -243,6 +263,9 @@
     // Theme toggle
     themeToggle.addEventListener('click', toggleTheme);
 
+    // Syntax toggle
+    syntaxToggle.addEventListener('click', toggleSyntax);
+
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'f' && currentFileId !== null) {
@@ -253,6 +276,42 @@
         e.preventDefault();
         searchInput.focus();
       }
+      // Help modal
+      if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        showHelp();
+      }
+      if (e.key === 'Escape') {
+        // Exit search if focused
+        if (document.activeElement === searchInput) {
+          searchInput.value = '';
+          searchQuery = '';
+          filterTree();
+          searchInput.blur();
+          viewport.focus();
+          return;
+        }
+        if (document.activeElement === contentSearch) {
+          contentSearch.value = '';
+          contentSearchQuery = '';
+          matchInfo.textContent = '';
+          matches = [];
+          currentMatchIndex = -1;
+          if (currentFileId !== null) {
+            renderCode(data.files[currentFileId]);
+          }
+          contentSearch.blur();
+          viewport.focus();
+          return;
+        }
+        hideHelp();
+      }
+    });
+
+    closeHelp.addEventListener('click', hideHelp);
+    helpToggle.addEventListener('click', showHelp);
+    helpModal.addEventListener('click', (e) => {
+      if (e.target === helpModal) hideHelp();
     });
   }
 
@@ -434,6 +493,73 @@
     if (saved) {
       document.body.dataset.theme = saved;
     }
+  }
+
+  function applySyntaxHighlighting() {
+    if (!syntaxHighlightEnabled || currentFileId === null) return;
+    if (typeof hljs === 'undefined') return;
+
+    const file = data.files[currentFileId];
+    if (!file) return;
+
+    const lineEls = document.querySelectorAll('.code-line');
+
+    lineEls.forEach((lineEl, idx) => {
+      const cov = file.coverage[idx];
+      // Only highlight lines with no coverage info
+      if (cov !== 0) return;
+
+      const content = lineEl.querySelector('.line-content');
+      if (!content || !content.textContent.trim()) return;
+
+      const text = content.textContent;
+
+      // Use hljs.highlight() which returns result object
+      const result = hljs.highlight(text, { language: 'go' });
+
+      // Parse the highlighted HTML safely using DOMParser
+      const parser = new DOMParser();
+      const doc = parser.parseFromString('<div>' + result.value + '</div>', 'text/html');
+      const wrapper = doc.body.firstChild;
+
+      // Clear and append parsed nodes
+      content.textContent = '';
+      while (wrapper.firstChild) {
+        content.appendChild(wrapper.firstChild);
+      }
+    });
+  }
+
+  function toggleSyntax() {
+    syntaxHighlightEnabled = !syntaxHighlightEnabled;
+    syntaxToggle.classList.toggle('active', syntaxHighlightEnabled);
+    localStorage.setItem('coverage-syntax', syntaxHighlightEnabled ? 'on' : 'off');
+
+    // Re-render current file
+    if (currentFileId !== null) {
+      const file = data.files[currentFileId];
+      if (file) {
+        renderCode(file);
+      }
+    }
+  }
+
+  function loadSyntaxPreference() {
+    const saved = localStorage.getItem('coverage-syntax');
+    if (saved !== null) {
+      // User preference overrides default
+      syntaxHighlightEnabled = saved === 'on';
+    }
+    // Update button state
+    syntaxToggle.classList.toggle('active', syntaxHighlightEnabled);
+  }
+
+  function showHelp() {
+    helpModal.classList.remove('hidden');
+  }
+
+  function hideHelp() {
+    helpModal.classList.add('hidden');
   }
 
   // Start the app

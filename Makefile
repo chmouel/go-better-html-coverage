@@ -1,4 +1,4 @@
-NAME = go-better-html-coverage
+NAME = bthcover
 
 all: build
 

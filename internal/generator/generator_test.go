@@ -37,7 +37,7 @@ func TestGenerate(t *testing.T) {
 		},
 	}
 
-	err := Generate(data, outputPath)
+	err := Generate(data, outputPath, Options{})
 	if err != nil {
 		t.Fatalf("Generate failed: %v", err)
 	}
@@ -124,7 +124,7 @@ func TestGenerateMultipleFiles(t *testing.T) {
 		},
 	}
 
-	err := Generate(data, outputPath)
+	err := Generate(data, outputPath, Options{})
 	if err != nil {
 		t.Fatalf("Generate failed: %v", err)
 	}
@@ -166,7 +166,7 @@ func TestGenerateEmptyData(t *testing.T) {
 		},
 	}
 
-	err := Generate(data, outputPath)
+	err := Generate(data, outputPath, Options{})
 	if err != nil {
 		t.Fatalf("Generate failed: %v", err)
 	}
@@ -188,7 +188,7 @@ func TestGenerateInvalidPath(t *testing.T) {
 		Summary: model.Summary{},
 	}
 
-	err := Generate(data, "/nonexistent/directory/coverage.html")
+	err := Generate(data, "/nonexistent/directory/coverage.html", Options{})
 	if err == nil {
 		t.Error("expected error for invalid output path")
 	}
@@ -213,7 +213,7 @@ func TestGenerateOverwritesExisting(t *testing.T) {
 		Summary: model.Summary{},
 	}
 
-	err := Generate(data, outputPath)
+	err := Generate(data, outputPath, Options{})
 	if err != nil {
 		t.Fatalf("Generate failed: %v", err)
 	}
@@ -263,7 +263,7 @@ func TestGenerateSpecialCharactersInCode(t *testing.T) {
 		},
 	}
 
-	err := Generate(data, outputPath)
+	err := Generate(data, outputPath, Options{})
 	if err != nil {
 		t.Fatalf("Generate failed: %v", err)
 	}

@@ -1,40 +1,84 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Coverage Report</title>
-  <style>{{.CSS}}</style>
-</head>
-<body data-theme="dark">
-  <div id="app">
-    <aside id="sidebar">
-      <div id="sidebar-header">
-        <h1>Coverage</h1>
-        <div id="summary"></div>
-      </div>
-      <div id="search-box">
-        <input type="text" id="search-input" placeholder="Search files..." />
-      </div>
-      <div id="file-tree"></div>
-    </aside>
-    <main id="canvas">
-      <header id="topbar">
-        <div id="file-path"></div>
-        <div id="topbar-actions">
-          <div id="in-file-search">
-            <input type="text" id="content-search" placeholder="Search in file..." />
-            <span id="match-info"></span>
-            <button id="prev-match" title="Previous match">&#9650;</button>
-            <button id="next-match" title="Next match">&#9660;</button>
-          </div>
-          <button id="theme-toggle" title="Toggle theme">&#9788;</button>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Coverage Report</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/go.min.js"></script>
+    <style>
+      {{.CSS}}
+    </style>
+  </head>
+  <body data-theme="dark">
+    <div id="app">
+      <aside id="sidebar">
+        <div id="sidebar-header">
+          <h1>BTHcoverage</h1>
+          <div id="tagline">Better HTML Go Coverage</div>
+          <div id="summary"></div>
         </div>
-      </header>
-      <div id="viewport"></div>
-    </main>
-  </div>
-  <script>window.COVERAGE_DATA = {{.DataJSON}};</script>
-  <script>{{.JS}}</script>
-</body>
+        <div id="search-box">
+          <input type="text" id="search-input" placeholder="Search files..." />
+        </div>
+        <div id="file-tree"></div>
+      </aside>
+      <main id="canvas">
+        <header id="topbar">
+          <div id="file-path"></div>
+          <div id="topbar-actions">
+            <div id="in-file-search">
+              <input
+                type="text"
+                id="content-search"
+                placeholder="Search in file..."
+              />
+              <span id="match-info"></span>
+              <button id="prev-match" title="Previous match">&#9650;</button>
+              <button id="next-match" title="Next match">&#9660;</button>
+            </div>
+            <button id="syntax-toggle" title="Toggle syntax highlighting">
+              &lt;/&gt;
+            </button>
+            <button id="theme-toggle" title="Toggle theme">&#9788;</button>
+            <button id="help-toggle" title="Keyboard shortcuts">?</button>
+          </div>
+        </header>
+        <div id="viewport" tabindex="-1"></div>
+      </main>
+      <div id="help-modal" class="modal hidden">
+        <div class="modal-content">
+          <h2>Keyboard Shortcuts</h2>
+          <dl>
+            <dt>Ctrl+P</dt>
+            <dd>Focus file search</dd>
+            <dt>Ctrl+F</dt>
+            <dd>Search in file</dd>
+            <dt>Enter</dt>
+            <dd>Next match</dd>
+            <dt>Shift+Enter</dt>
+            <dd>Previous match</dd>
+            <dt>?</dt>
+            <dd>Show this help</dd>
+            <dt>Esc</dt>
+            <dd>Close modal</dd>
+          </dl>
+          <button id="close-help">Close</button>
+        </div>
+      </div>
+    </div>
+    <script>
+      window.COVERAGE_DATA = {{.DataJSON}};
+    </script>
+    <script>
+      window.COVERAGE_CONFIG = {{.Config}};
+    </script>
+    <script>
+      {{.JS}}
+    </script>
+  </body>
 </html>

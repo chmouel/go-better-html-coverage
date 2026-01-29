@@ -1,6 +1,16 @@
-# go-better-html-coverage
+# bthcover
 
-Generates a single HTML file from Go coverage profiles. No external dependencies, works offline.
+Better HTML Go Coverage - Single-file HTML coverage reports for Go.
+
+## Features
+
+- Single self-contained HTML file
+- File tree with search (Ctrl+P)
+- In-file search with highlighting (Ctrl+F)
+- Syntax highlighting for Go code (via CDN)
+- Dark/light theme toggle
+- Keyboard shortcuts (press ? for help)
+- Auto-opens in browser
 
 ## Install
 
@@ -12,22 +22,18 @@ go install github.com/chmouel/go-better-html-coverage@latest
 
 ```bash
 go test -coverprofile=coverage.out ./...
-go-better-html-coverage -profile coverage.out -o coverage.html
+bthcover -profile coverage.out -o coverage.html
 ```
-
-Open `coverage.html` in a browser.
 
 ## Flags
 
-- `-profile` - path to coverage profile (default: `coverage.out`)
-- `-o` - output HTML file (default: `coverage.html`)
-- `-src` - source root directory (default: `.`)
-
-## Shortcuts
-
-- `Ctrl+P` - focus file search
-- `Ctrl+F` - search in current file
-- `Enter` / `Shift+Enter` - next/previous match
+| Flag | Default | Description |
+|------|---------|-------------|
+| `-profile` | `coverage.out` | Coverage profile path |
+| `-o` | `coverage.html` | Output HTML file |
+| `-src` | `.` | Source root directory |
+| `-no-syntax` | `false` | Disable syntax highlighting by default |
+| `-n` | `false` | Do not open browser |
 
 ## Licence
 
