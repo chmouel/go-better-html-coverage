@@ -1,0 +1,83 @@
+version: 2
+
+project_name: go-better-html-coverage
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: go-better-html-coverage
+    main: ./main.go
+    binary: go-better-html-coverage
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+
+archives:
+  - name_template: "{{ .ProjectName }}-{{ .Version }}-{{ .Os }}-{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        format: zip
+      - goos: darwin
+        format: tar.gz
+      - goos: linux
+        format: tar.gz
+    files:
+      - README.md
+      - LICENSE
+
+release:
+  draft: false
+  prerelease: auto
+  make_latest: true
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "^ci:"
+      - Merge pull request
+      - Merge branch
+
+brews:
+  - name: go-better-html-coverage
+    repository:
+      owner: chmouel
+      name: homebrew-tap
+      token: "{{ .Env.GITHUB_TOKEN }}"
+    commit_author:
+      name: goreleaserbot
+      email: goreleaser@chmouel.com
+    homepage: "https://github.com/chmouel/go-better-html-coverage"
+    description: "Better HTML Go Coverage - Single-file HTML coverage reports for Go"
+    license: Apache-2.0
+    test: |
+      system "#{bin}/go-better-html-coverage --help"
+
+aurs:
+  - name: go-better-html-coverage-bin
+    git_url: ssh://aur@aur.archlinux.org/go-better-html-coverage-bin.git
+    private_key: "{{ .Env.AUR_SSH_PRIVATE_KEY }}"
+    commit_author:
+      name: goreleaserbot
+      email: goreleaser@chmouel.com
+    optdepends:
+      - xdg-utils
+    homepage: "https://github.com/chmouel/go-better-html-coverage"
+    description: "Better HTML Go Coverage - Single-file HTML coverage reports for Go"
+    license: Apache-2.0

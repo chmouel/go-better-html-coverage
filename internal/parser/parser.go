@@ -94,11 +94,11 @@ func Parse(profilePath, srcRoot string) (*model.CoverageData, error) {
 
 func detectModulePath(srcRoot string) (string, error) {
 	goModPath := filepath.Join(srcRoot, "go.mod")
-	f, err := os.Open(goModPath)
+	f, err := os.Open(goModPath) //nolint:gosec // path is from srcRoot argument
 	if err != nil {
 		return "", err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
@@ -111,11 +111,11 @@ func detectModulePath(srcRoot string) (string, error) {
 }
 
 func readLines(path string) ([]string, error) {
-	f, err := os.Open(path)
+	f, err := os.Open(path) //nolint:gosec // path is from coverage profile
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	var lines []string
 	scanner := bufio.NewScanner(f)

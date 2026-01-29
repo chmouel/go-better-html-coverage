@@ -48,7 +48,7 @@ func TestGenerate(t *testing.T) {
 	}
 
 	// Read and verify content
-	content, err := os.ReadFile(outputPath)
+	content, err := os.ReadFile(outputPath) //nolint:gosec // test file
 	if err != nil {
 		t.Fatalf("failed to read output file: %v", err)
 	}
@@ -56,7 +56,7 @@ func TestGenerate(t *testing.T) {
 	htmlStr := string(content)
 
 	// Check for HTML structure
-	if !strings.Contains(htmlStr, "<!DOCTYPE html>") {
+	if !strings.Contains(htmlStr, "<!doctype html>") {
 		t.Error("output should contain DOCTYPE")
 	}
 	if !strings.Contains(htmlStr, "<title>Coverage Report</title>") {
@@ -129,7 +129,7 @@ func TestGenerateMultipleFiles(t *testing.T) {
 		t.Fatalf("Generate failed: %v", err)
 	}
 
-	content, err := os.ReadFile(outputPath)
+	content, err := os.ReadFile(outputPath) //nolint:gosec // test file
 	if err != nil {
 		t.Fatalf("failed to read output file: %v", err)
 	}
@@ -199,7 +199,7 @@ func TestGenerateOverwritesExisting(t *testing.T) {
 	outputPath := filepath.Join(tmpDir, "coverage.html")
 
 	// Write initial content
-	if err := os.WriteFile(outputPath, []byte("old content"), 0644); err != nil {
+	if err := os.WriteFile(outputPath, []byte("old content"), 0o644); err != nil { //nolint:gosec // test file
 		t.Fatalf("failed to write initial file: %v", err)
 	}
 
@@ -218,7 +218,7 @@ func TestGenerateOverwritesExisting(t *testing.T) {
 		t.Fatalf("Generate failed: %v", err)
 	}
 
-	content, err := os.ReadFile(outputPath)
+	content, err := os.ReadFile(outputPath) //nolint:gosec // test file
 	if err != nil {
 		t.Fatalf("failed to read output file: %v", err)
 	}
@@ -226,7 +226,7 @@ func TestGenerateOverwritesExisting(t *testing.T) {
 	if string(content) == "old content" {
 		t.Error("file should have been overwritten")
 	}
-	if !strings.Contains(string(content), "<!DOCTYPE html>") {
+	if !strings.Contains(string(content), "<!doctype html>") {
 		t.Error("file should contain new HTML content")
 	}
 }
@@ -268,7 +268,7 @@ func TestGenerateSpecialCharactersInCode(t *testing.T) {
 		t.Fatalf("Generate failed: %v", err)
 	}
 
-	content, err := os.ReadFile(outputPath)
+	content, err := os.ReadFile(outputPath) //nolint:gosec // test file
 	if err != nil {
 		t.Fatalf("failed to read output file: %v", err)
 	}

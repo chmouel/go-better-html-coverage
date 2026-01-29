@@ -1,4 +1,7 @@
-# bthcover
+# go-better-html-coverage
+
+![Go](https://img.shields.io/badge/go-1.25%2B-blue)
+![Coverage](https://img.shields.io/badge/Coverage-67.6%25-yellow)
 
 Better HTML Go Coverage - Single-file HTML coverage reports for Go.
 
@@ -22,7 +25,7 @@ go install github.com/chmouel/go-better-html-coverage@latest
 
 ```bash
 go test -coverprofile=coverage.out ./...
-bthcover -profile coverage.out -o coverage.html
+go-better-html-coverage -profile coverage.out -o coverage.html
 ```
 
 ## Flags
@@ -35,6 +38,14 @@ bthcover -profile coverage.out -o coverage.html
 | `-no-syntax` | `false` | Disable syntax highlighting by default |
 | `-n` | `false` | Do not open browser |
 
-## Licence
+## Copyright
 
-MIT
+[Apache-2.0](./LICENSE)
+
+## Authors
+
+### Chmouel Boudjnah
+
+- Fediverse - <[@chmouel@chmouel.com](https://fosstodon.org/@chmouel)>
+- Twitter - <[@chmouel](https://twitter.com/chmouel)>
+- Blog  - <[https://blog.chmouel.com](https://blog.chmouel.com)>

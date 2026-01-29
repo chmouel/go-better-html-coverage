@@ -65,6 +65,7 @@ func Generate(data *model.CoverageData, outputPath string, opts Options) error {
 		return fmt.Errorf("parsing template: %w", err)
 	}
 
+	//nolint:gosec // G203: CSS/JS are from embedded assets, JSON is marshaled from our data
 	td := templateData{
 		CSS:      template.CSS(cssBytes),
 		JS:       template.JS(jsBytes),
@@ -78,7 +79,7 @@ func Generate(data *model.CoverageData, outputPath string, opts Options) error {
 	}
 
 	// Write output file
-	if err := os.WriteFile(outputPath, buf.Bytes(), 0644); err != nil {
+	if err := os.WriteFile(outputPath, buf.Bytes(), 0o644); err != nil { //nolint:gosec // G306: HTML report should be readable
 		return fmt.Errorf("writing output file: %w", err)
 	}
 

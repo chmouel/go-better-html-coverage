@@ -18,8 +18,27 @@
     <div id="app">
       <aside id="sidebar">
         <div id="sidebar-header">
-          <h1>BTHcoverage</h1>
-          <div id="tagline">Better HTML Go Coverage</div>
+          <div id="logo-container">
+            <svg id="logo" viewBox="0 0 32 32" width="32" height="32">
+              <defs>
+                <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:var(--accent);stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:var(--accent);stop-opacity:0.7" />
+                </linearGradient>
+              </defs>
+              <!-- Checkmark circle background -->
+              <circle cx="16" cy="16" r="14" fill="none" stroke="url(#logoGradient)" stroke-width="2" opacity="0.3"/>
+              <!-- Checkmark -->
+              <path d="M 10 17 L 14 21 L 22 11" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <!-- Percentage symbol -->
+              <circle cx="24" cy="10" r="1.5" fill="var(--accent)" opacity="0.6"/>
+              <circle cx="26" cy="12" r="1.5" fill="var(--accent)" opacity="0.6"/>
+            </svg>
+            <div id="logo-text">
+              <h1>Coverage</h1>
+              <div id="tagline">Better HTML Go Coverage</div>
+            </div>
+          </div>
           <div id="summary"></div>
         </div>
         <div id="search-box">

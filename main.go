@@ -62,6 +62,7 @@ func openBrowser(path string) {
 	}
 
 	var cmd *exec.Cmd
+	//nolint:gosec // G204: absPath is from filepath.Abs of our output file
 	switch runtime.GOOS {
 	case "darwin":
 		cmd = exec.Command("open", absPath)

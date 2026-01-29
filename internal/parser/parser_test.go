@@ -194,7 +194,7 @@ func TestDetectModulePath(t *testing.T) {
 
 go 1.21
 `
-	err := os.WriteFile(filepath.Join(tmpDir, "go.mod"), []byte(goMod), 0644)
+	err := os.WriteFile(filepath.Join(tmpDir, "go.mod"), []byte(goMod), 0o644) //nolint:gosec // test file
 	if err != nil {
 		t.Fatalf("failed to create go.mod: %v", err)
 	}
@@ -212,7 +212,7 @@ func TestDetectModulePathNoModule(t *testing.T) {
 	tmpDir := t.TempDir()
 	goMod := `go 1.21
 `
-	err := os.WriteFile(filepath.Join(tmpDir, "go.mod"), []byte(goMod), 0644)
+	err := os.WriteFile(filepath.Join(tmpDir, "go.mod"), []byte(goMod), 0o644) //nolint:gosec // test file
 	if err != nil {
 		t.Fatalf("failed to create go.mod: %v", err)
 	}
@@ -235,7 +235,7 @@ func TestReadLines(t *testing.T) {
 	tmpDir := t.TempDir()
 	content := "line1\nline2\nline3"
 	path := filepath.Join(tmpDir, "test.txt")
-	err := os.WriteFile(path, []byte(content), 0644)
+	err := os.WriteFile(path, []byte(content), 0o644) //nolint:gosec // test file
 	if err != nil {
 		t.Fatalf("failed to create test file: %v", err)
 	}
@@ -255,7 +255,7 @@ func TestReadLines(t *testing.T) {
 func TestReadLinesEmpty(t *testing.T) {
 	tmpDir := t.TempDir()
 	path := filepath.Join(tmpDir, "empty.txt")
-	err := os.WriteFile(path, []byte{}, 0644)
+	err := os.WriteFile(path, []byte{}, 0o644) //nolint:gosec // test file
 	if err != nil {
 		t.Fatalf("failed to create empty file: %v", err)
 	}
@@ -284,7 +284,7 @@ func TestParseIntegration(t *testing.T) {
 
 go 1.21
 `
-	if err := os.WriteFile(filepath.Join(tmpDir, "go.mod"), []byte(goMod), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(tmpDir, "go.mod"), []byte(goMod), 0o644); err != nil { //nolint:gosec // test file
 		t.Fatalf("failed to create go.mod: %v", err)
 	}
 
@@ -299,7 +299,7 @@ func unused() {
 	println("unused")
 }
 `
-	if err := os.WriteFile(filepath.Join(tmpDir, "main.go"), []byte(srcContent), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(tmpDir, "main.go"), []byte(srcContent), 0o644); err != nil { //nolint:gosec // test file
 		t.Fatalf("failed to create main.go: %v", err)
 	}
 
@@ -311,7 +311,7 @@ testmod/main.go:3.13,5.2 1 1
 testmod/main.go:7.14,9.2 1 0
 `
 	coveragePath := filepath.Join(tmpDir, "coverage.out")
-	if err := os.WriteFile(coveragePath, []byte(coverageProfile), 0644); err != nil {
+	if err := os.WriteFile(coveragePath, []byte(coverageProfile), 0o644); err != nil { //nolint:gosec // test file
 		t.Fatalf("failed to create coverage.out: %v", err)
 	}
 
@@ -377,7 +377,7 @@ testmod/main.go:7.14,9.2 1 0
 func TestParseNoGoMod(t *testing.T) {
 	tmpDir := t.TempDir()
 	coveragePath := filepath.Join(tmpDir, "coverage.out")
-	if err := os.WriteFile(coveragePath, []byte("mode: set\n"), 0644); err != nil {
+	if err := os.WriteFile(coveragePath, []byte("mode: set\n"), 0o644); err != nil { //nolint:gosec // test file
 		t.Fatalf("failed to create coverage.out: %v", err)
 	}
 
@@ -389,12 +389,12 @@ func TestParseNoGoMod(t *testing.T) {
 
 func TestParseInvalidProfile(t *testing.T) {
 	tmpDir := t.TempDir()
-	if err := os.WriteFile(filepath.Join(tmpDir, "go.mod"), []byte("module test\n"), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(tmpDir, "go.mod"), []byte("module test\n"), 0o644); err != nil { //nolint:gosec // test file
 		t.Fatalf("failed to create go.mod: %v", err)
 	}
 
 	coveragePath := filepath.Join(tmpDir, "coverage.out")
-	if err := os.WriteFile(coveragePath, []byte("invalid content"), 0644); err != nil {
+	if err := os.WriteFile(coveragePath, []byte("invalid content"), 0o644); err != nil { //nolint:gosec // test file
 		t.Fatalf("failed to create coverage.out: %v", err)
 	}
 
