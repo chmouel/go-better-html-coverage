@@ -6,14 +6,27 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
 
 	"github.com/chmouel/go-better-html-coverage/internal/badge"
 	"github.com/chmouel/go-better-html-coverage/internal/generator"
+	"github.com/chmouel/go-better-html-coverage/internal/model"
 	"github.com/chmouel/go-better-html-coverage/internal/parser"
 )
+
+type arrayFlags []string
+
+func (a *arrayFlags) String() string {
+	return strings.Join(*a, ",")
+}
+
+func (a *arrayFlags) Set(value string) error {
+	*a = append(*a, value)
+	return nil
+}
 
 func main() {
 	var (
@@ -25,6 +38,8 @@ func main() {
 		ref             string
 		noSyntax        bool
 		noOpen          bool
+		quiet           bool
+		excludePatterns arrayFlags
 	)
 
 	flag.StringVar(&profilePath, "profile", "coverage.out", "coverage profile path")
@@ -35,6 +50,8 @@ func main() {
 	flag.StringVar(&ref, "ref", "", "git ref or range to filter coverage")
 	flag.BoolVar(&noSyntax, "no-syntax", false, "disable syntax highlighting by default")
 	flag.BoolVar(&noOpen, "n", false, "do not open browser")
+	flag.BoolVar(&quiet, "q", false, "quiet mode: suppress non-error output")
+	flag.Var(&excludePatterns, "exclude", "regex pattern to exclude files (can be repeated)")
 	flag.Parse()
 
 	// if outputPath is "-", it means stdout then don't try to open browser
@@ -58,6 +75,18 @@ func main() {
 		data = parser.FilterByPaths(data, changedFiles)
 	}
 
+	if len(excludePatterns) > 0 {
+		data, err = filterByRegex(data, excludePatterns)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error applying exclusion patterns: %v\n", err)
+			os.Exit(1)
+		}
+		if len(data.Files) == 0 {
+			fmt.Fprintf(os.Stderr, "Warning: all files excluded by patterns\n")
+			os.Exit(1)
+		}
+	}
+
 	// Generate HTML report
 	opts := generator.Options{NoSyntax: noSyntax}
 	if err := generator.Generate(data, outputPath, opts); err != nil {
@@ -65,11 +94,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Fprintf(os.Stderr, "Coverage report written to %s\n", outputPath)
-	fmt.Fprintf(os.Stderr, "Coverage: %.1f%% (%d/%d lines)\n",
-		data.Summary.Percent,
-		data.Summary.CoveredLines,
-		data.Summary.TotalLines)
+	if !quiet {
+		fmt.Fprintf(os.Stderr, "Coverage report written to %s\n", outputPath)
+		fmt.Fprintf(os.Stderr, "Coverage: %.1f%% (%d/%d lines)\n",
+			data.Summary.Percent,
+			data.Summary.CoveredLines,
+			data.Summary.TotalLines)
+	}
 
 	// Generate badge if requested
 	if badgePath != "" {
@@ -82,13 +113,27 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Error generating badge: %v\n", err)
 			os.Exit(1)
 		}
-		fmt.Fprintf(os.Stderr, "Coverage badge written to %s\n", badgePath)
+		if !quiet {
+			fmt.Fprintf(os.Stderr, "Coverage badge written to %s\n", badgePath)
+		}
 	}
 
 	// Open in browser unless -n flag is set
 	if !noOpen {
 		openBrowser(outputPath)
 	}
+}
+
+func filterByRegex(data *model.CoverageData, patterns []string) (*model.CoverageData, error) {
+	var regexps []*regexp.Regexp
+	for _, pattern := range patterns {
+		re, err := regexp.Compile(pattern)
+		if err != nil {
+			return nil, fmt.Errorf("invalid regex pattern %q: %w", pattern, err)
+		}
+		regexps = append(regexps, re)
+	}
+	return parser.FilterByRegex(data, regexps), nil
 }
 
 func openBrowser(path string) {

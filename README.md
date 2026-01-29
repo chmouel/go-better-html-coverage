@@ -77,6 +77,16 @@ If you want to filter the coverage report to only files changed in a git ref
 you can specify the flag `-ref` with a git ref or range (e.g. `main` or
 `main..HEAD`).
 
+Use `-exclude` to exclude files matching regex patterns. This is useful for
+filtering out mock files, generated code, or test files. The flag can be
+repeated to specify multiple patterns:
+
+```bash
+go-better-html-coverage -profile coverage.out -exclude "mock_.*\.go$" -exclude "\.pb\.go$"
+```
+
+-q` is for quiet mode, it suppresses non-error output.
+
 Use `-badge` to generate an SVG badge showing the coverage percentage. This is
 useful for embedding in README files or CI/CD pipelines:
 

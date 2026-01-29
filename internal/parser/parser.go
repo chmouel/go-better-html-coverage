@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -106,6 +107,58 @@ func FilterByPaths(data *model.CoverageData, allowed map[string]struct{}) *model
 		if _, ok := allowed[file.Path]; !ok {
 			continue
 		}
+		file.ID = len(filteredFiles)
+		filteredFiles = append(filteredFiles, file)
+
+		for _, c := range file.Coverage {
+			if c > 0 {
+				totalLines++
+				if c == 2 {
+					coveredLines++
+				}
+			}
+		}
+	}
+
+	tree := buildTree(filteredFiles)
+	percent := 0.0
+	if totalLines > 0 {
+		percent = float64(coveredLines) / float64(totalLines) * 100
+	}
+
+	return &model.CoverageData{
+		Files: filteredFiles,
+		Tree:  tree,
+		Summary: model.Summary{
+			TotalLines:   totalLines,
+			CoveredLines: coveredLines,
+			Percent:      percent,
+		},
+	}
+}
+
+// FilterByRegex filters coverage data to exclude files matching any of the provided regex patterns.
+func FilterByRegex(data *model.CoverageData, patterns []*regexp.Regexp) *model.CoverageData {
+	if data == nil {
+		return nil
+	}
+
+	filteredFiles := make([]model.FileData, 0, len(data.Files))
+	totalLines := 0
+	coveredLines := 0
+
+	for _, file := range data.Files {
+		excluded := false
+		for _, pattern := range patterns {
+			if pattern.MatchString(file.Path) {
+				excluded = true
+				break
+			}
+		}
+		if excluded {
+			continue
+		}
+
 		file.ID = len(filteredFiles)
 		filteredFiles = append(filteredFiles, file)
 

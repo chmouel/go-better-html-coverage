@@ -3,6 +3,7 @@ package parser
 import (
 	"os"
 	"path/filepath"
+	"regexp"
 	"testing"
 
 	"github.com/chmouel/go-better-html-coverage/internal/model"
@@ -436,5 +437,140 @@ func TestFilterByPaths(t *testing.T) {
 	}
 	if filtered.Summary.CoveredLines != 0 {
 		t.Fatalf("expected covered lines 0, got %d", filtered.Summary.CoveredLines)
+	}
+}
+
+func TestFilterByRegex(t *testing.T) {
+	data := &model.CoverageData{
+		Files: []model.FileData{
+			{ID: 0, Path: "internal/parser/parser.go", Coverage: []int{0, 2, 2}},
+			{ID: 1, Path: "internal/parser/mock_parser.go", Coverage: []int{0, 1}},
+			{ID: 2, Path: "internal/model/model.go", Coverage: []int{0, 2}},
+			{ID: 3, Path: "internal/generated/types.pb.go", Coverage: []int{0, 1, 1}},
+		},
+		Tree: &model.TreeNode{
+			Name: ".",
+			Type: "dir",
+		},
+		Summary: model.Summary{
+			TotalLines:   6,
+			CoveredLines: 3,
+			Percent:      50,
+		},
+	}
+
+	tests := []struct {
+		name            string
+		patterns        []string
+		expectedFiles   []string
+		expectedTotal   int
+		expectedCovered int
+	}{
+		{
+			name:            "exclude mocks",
+			patterns:        []string{`mock_.*\.go$`},
+			expectedFiles:   []string{"internal/parser/parser.go", "internal/model/model.go", "internal/generated/types.pb.go"},
+			expectedTotal:   5,
+			expectedCovered: 3,
+		},
+		{
+			name:            "exclude generated files",
+			patterns:        []string{`\.pb\.go$`},
+			expectedFiles:   []string{"internal/parser/parser.go", "internal/parser/mock_parser.go", "internal/model/model.go"},
+			expectedTotal:   4,
+			expectedCovered: 3,
+		},
+		{
+			name:            "multiple patterns",
+			patterns:        []string{`mock_.*\.go$`, `\.pb\.go$`},
+			expectedFiles:   []string{"internal/parser/parser.go", "internal/model/model.go"},
+			expectedTotal:   3,
+			expectedCovered: 3,
+		},
+		{
+			name:            "no matches",
+			patterns:        []string{`nonexistent`},
+			expectedFiles:   []string{"internal/parser/parser.go", "internal/parser/mock_parser.go", "internal/model/model.go", "internal/generated/types.pb.go"},
+			expectedTotal:   6,
+			expectedCovered: 3,
+		},
+		{
+			name:            "exclude all",
+			patterns:        []string{`\.go$`},
+			expectedFiles:   []string{},
+			expectedTotal:   0,
+			expectedCovered: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var regexps []*regexp.Regexp
+			for _, pattern := range tt.patterns {
+				re := regexp.MustCompile(pattern)
+				regexps = append(regexps, re)
+			}
+
+			filtered := FilterByRegex(data, regexps)
+
+			if len(filtered.Files) != len(tt.expectedFiles) {
+				t.Errorf("expected %d files, got %d", len(tt.expectedFiles), len(filtered.Files))
+			}
+
+			for i, expectedPath := range tt.expectedFiles {
+				if i >= len(filtered.Files) {
+					break
+				}
+				if filtered.Files[i].Path != expectedPath {
+					t.Errorf("file %d: expected path %s, got %s", i, expectedPath, filtered.Files[i].Path)
+				}
+				if filtered.Files[i].ID != i {
+					t.Errorf("file %d: expected ID %d, got %d", i, i, filtered.Files[i].ID)
+				}
+			}
+
+			if filtered.Summary.TotalLines != tt.expectedTotal {
+				t.Errorf("expected total lines %d, got %d", tt.expectedTotal, filtered.Summary.TotalLines)
+			}
+			if filtered.Summary.CoveredLines != tt.expectedCovered {
+				t.Errorf("expected covered lines %d, got %d", tt.expectedCovered, filtered.Summary.CoveredLines)
+			}
+
+			if tt.expectedTotal > 0 {
+				expectedPercent := float64(tt.expectedCovered) / float64(tt.expectedTotal) * 100
+				if filtered.Summary.Percent != expectedPercent {
+					t.Errorf("expected percent %.1f, got %.1f", expectedPercent, filtered.Summary.Percent)
+				}
+			}
+		})
+	}
+}
+
+func TestFilterByRegexNilData(t *testing.T) {
+	filtered := FilterByRegex(nil, []*regexp.Regexp{regexp.MustCompile("test")})
+	if filtered != nil {
+		t.Error("expected nil for nil input")
+	}
+}
+
+func TestFilterByRegexEmptyPatterns(t *testing.T) {
+	data := &model.CoverageData{
+		Files: []model.FileData{
+			{ID: 0, Path: "a.go", Coverage: []int{0, 2}},
+		},
+		Tree: &model.TreeNode{
+			Name: ".",
+			Type: "dir",
+		},
+		Summary: model.Summary{
+			TotalLines:   1,
+			CoveredLines: 1,
+			Percent:      100,
+		},
+	}
+
+	filtered := FilterByRegex(data, []*regexp.Regexp{})
+	if len(filtered.Files) != 1 {
+		t.Errorf("expected 1 file with empty patterns, got %d", len(filtered.Files))
 	}
 }
