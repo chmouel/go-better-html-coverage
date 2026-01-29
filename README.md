@@ -5,6 +5,8 @@
 
 Better HTML Go Coverage - Single-file HTML coverage reports for Go.
 
+<img src="./.github/screenshots/better-html-go-coverage.png" width="800"/>
+
 ## Features
 
 - Single self-contained HTML file
