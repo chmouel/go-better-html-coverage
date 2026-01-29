@@ -51,7 +51,7 @@ homebrew_casks:
   - name: go-better-html-coverage
     repository:
       owner: chmouel
-      name: lazyworktree
+      name: go-better-html-coverage
     directory: Casks
     commit_author:
       name: goreleaserbot
@@ -61,8 +61,7 @@ homebrew_casks:
     license: Apache-2.0
     caveats: |
       On first run, macOS may block the binary. To remove the quarantine attribute:
-        xattr -d com.apple.quarantine #{staged_path}/lazyworktree
-
+        xattr -d com.apple.quarantine #{staged_path}/go-better-html-coverage
 aurs:
   - name: go-better-html-coverage-bin
     git_url: ssh://aur@aur.archlinux.org/go-better-html-coverage-bin.git
