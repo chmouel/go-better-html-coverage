@@ -16,6 +16,7 @@ A better HTML Go Coverage - Single-file HTML coverage reports for Go.
 - Dark/light theme toggle
 - Keyboard shortcuts (press ? for help)
 - Auto-opens in browser
+- SVG badge generation for README/CI integration
 
 ## Install
 
@@ -75,6 +76,29 @@ You can specify a `-src` flag to point to the root of your source code, it used
 If you want to filter the coverage report to only files changed in a git ref
 you can specify the flag `-ref` with a git ref or range (e.g. `main` or
 `main..HEAD`).
+
+Use `-badge` to generate an SVG badge showing the coverage percentage. This is
+useful for embedding in README files or CI/CD pipelines:
+
+```bash
+go-better-html-coverage -profile coverage.out -badge coverage-badge.svg
+```
+
+The badge color automatically changes based on coverage thresholds. By default:
+
+- Red: 0-40%
+- Yellow: 41-70%
+- Green: 71-100%
+
+You can customize the thresholds using `-badge-threshold` for example:
+
+```bash
+go-better-html-coverage -profile coverage.out -badge coverage-badge.svg -badge-threshold "50,85"
+```
+
+Would make: Red 0-50%, Yellow 51-84%, Green 85-100%.
+
+You can also output the badge to stdout using `-badge -` and redirect it to a file.
 
 See `-help` for all available flags.
 

@@ -7,24 +7,30 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 
+	"github.com/chmouel/go-better-html-coverage/internal/badge"
 	"github.com/chmouel/go-better-html-coverage/internal/generator"
 	"github.com/chmouel/go-better-html-coverage/internal/parser"
 )
 
 func main() {
 	var (
-		profilePath string
-		outputPath  string
-		srcRoot     string
-		ref         string
-		noSyntax    bool
-		noOpen      bool
+		profilePath     string
+		outputPath      string
+		badgePath       string
+		badgeThresholds string
+		srcRoot         string
+		ref             string
+		noSyntax        bool
+		noOpen          bool
 	)
 
 	flag.StringVar(&profilePath, "profile", "coverage.out", "coverage profile path")
 	flag.StringVar(&outputPath, "o", "-", "output HTML file")
+	flag.StringVar(&badgePath, "badge", "", "output SVG badge file")
+	flag.StringVar(&badgeThresholds, "badge-threshold", "40,70", "badge color thresholds (red,yellow) e.g., 40,70")
 	flag.StringVar(&srcRoot, "src", ".", "source root directory")
 	flag.StringVar(&ref, "ref", "", "git ref or range to filter coverage")
 	flag.BoolVar(&noSyntax, "no-syntax", false, "disable syntax highlighting by default")
@@ -64,6 +70,20 @@ func main() {
 		data.Summary.Percent,
 		data.Summary.CoveredLines,
 		data.Summary.TotalLines)
+
+	// Generate badge if requested
+	if badgePath != "" {
+		thresholds, err := parseThresholds(badgeThresholds)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error parsing badge thresholds: %v\n", err)
+			os.Exit(1)
+		}
+		if err := badge.GenerateBadge(data.Summary.Percent, badgePath, thresholds); err != nil {
+			fmt.Fprintf(os.Stderr, "Error generating badge: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Fprintf(os.Stderr, "Coverage badge written to %s\n", badgePath)
+	}
 
 	// Open in browser unless -n flag is set
 	if !noOpen {
@@ -123,4 +143,34 @@ func gitChangedFiles(repoRoot, ref string) (map[string]struct{}, error) {
 		files[line] = struct{}{}
 	}
 	return files, nil
+}
+
+func parseThresholds(input string) (badge.Thresholds, error) {
+	parts := strings.Split(input, ",")
+	if len(parts) != 2 {
+		return badge.Thresholds{}, fmt.Errorf("expected format: red,yellow (e.g., 40,70)")
+	}
+
+	red, err := strconv.ParseFloat(strings.TrimSpace(parts[0]), 64)
+	if err != nil {
+		return badge.Thresholds{}, fmt.Errorf("invalid red threshold: %w", err)
+	}
+
+	yellow, err := strconv.ParseFloat(strings.TrimSpace(parts[1]), 64)
+	if err != nil {
+		return badge.Thresholds{}, fmt.Errorf("invalid yellow threshold: %w", err)
+	}
+
+	if red < 0 || red > 100 || yellow < 0 || yellow > 100 {
+		return badge.Thresholds{}, fmt.Errorf("thresholds must be between 0 and 100")
+	}
+
+	if red >= yellow {
+		return badge.Thresholds{}, fmt.Errorf("red threshold must be less than yellow threshold")
+	}
+
+	return badge.Thresholds{
+		Red:    red,
+		Yellow: yellow,
+	}, nil
 }
