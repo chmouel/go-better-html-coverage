@@ -199,6 +199,13 @@
 
       item.appendChild(icon);
       item.appendChild(name);
+
+      // Add coverage badge to files
+      const badge = document.createElement('span');
+      badge.className = 'coverage-badge';
+      badge.textContent = calculateDirectoryCoverage(node).toFixed(1) + '%';
+      item.appendChild(badge);
+
       nodeEl.appendChild(item);
     }
 
