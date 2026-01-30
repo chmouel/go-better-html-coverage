@@ -76,6 +76,19 @@ If you want to filter the coverage report to only files changed in a git ref
 you can specify the flag `-ref` with a git ref or range (e.g. `main` or
 `main..HEAD`).
 
+Use `-base` to compare coverage against a base profile. This is useful for
+seeing what changed between two coverage runs (e.g. before and after a PR):
+
+```bash
+go-better-html-coverage -profile coverage.out -base coverage-main.out -o diff.html
+```
+
+In diff mode:
+- Newly covered lines are highlighted in bright green
+- Regressions (lines that were covered but are now uncovered) are highlighted in bright red
+- Unchanged lines are dimmed
+- The summary shows the coverage delta percentage
+
 Use `-exclude` to exclude files matching regex patterns. This is useful for
 filtering out mock files, generated code, or test files. The flag can be
 repeated to specify multiple patterns:

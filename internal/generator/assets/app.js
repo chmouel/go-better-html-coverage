@@ -203,9 +203,29 @@
     span.className = 'percent';
     span.textContent = data.summary.percent.toFixed(1) + '%';
     summary.appendChild(span);
-    summary.appendChild(document.createTextNode(
-      ' coverage (' + data.summary.coveredLines + '/' + data.summary.totalLines + ' lines)'
-    ));
+
+    if (data.isDiffMode && data.diffSummary) {
+      // Show delta percentage
+      const deltaSpan = document.createElement('span');
+      const delta = data.diffSummary.deltaPercent;
+      deltaSpan.style.marginLeft = '4px';
+      deltaSpan.style.color = delta >= 0 ? 'var(--covered-gutter)' : 'var(--uncovered-gutter)';
+      deltaSpan.textContent = '(' + (delta >= 0 ? '+' : '') + delta.toFixed(1) + '%)';
+      summary.appendChild(deltaSpan);
+      summary.appendChild(document.createTextNode(' '));
+
+      // Show changes summary
+      const changesEl = document.createElement('div');
+      changesEl.style.fontSize = '11px';
+      changesEl.style.marginTop = '4px';
+      changesEl.textContent = '+' + data.diffSummary.newlyCoveredLines + ' covered, -' +
+        data.diffSummary.newlyUncoveredLines + ' regressions';
+      summary.appendChild(changesEl);
+    } else {
+      summary.appendChild(document.createTextNode(
+        ' coverage (' + data.summary.coveredLines + '/' + data.summary.totalLines + ' lines)'
+      ));
+    }
   }
 
   function renderTree() {
@@ -363,15 +383,35 @@
     container.className = 'code-container';
 
     file.lines.forEach((line, idx) => {
+      const cov = file.coverage[idx];
+      const diff = file.diffState ? file.diffState[idx] : null;
+
       const lineEl = document.createElement('div');
       lineEl.className = 'code-line';
       lineEl.dataset.line = idx + 1;
 
-      const cov = file.coverage[idx];
-      if (cov === 2) {
-        lineEl.classList.add('covered');
-      } else if (cov === 1) {
-        lineEl.classList.add('uncovered');
+      if (data.isDiffMode && diff !== null) {
+        // Diff mode: use diff state for styling
+        switch (diff) {
+          case 1: // newly covered
+            lineEl.classList.add('newly-covered');
+            break;
+          case 2: // newly uncovered (regression)
+            lineEl.classList.add('newly-uncovered');
+            break;
+          case 3: // unchanged covered
+          case 4: // unchanged uncovered
+          case 0: // no change
+            lineEl.classList.add('unchanged');
+            break;
+        }
+      } else {
+        // Normal mode
+        if (cov === 2) {
+          lineEl.classList.add('covered');
+        } else if (cov === 1) {
+          lineEl.classList.add('uncovered');
+        }
       }
 
       const gutter = document.createElement('div');

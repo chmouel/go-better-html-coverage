@@ -134,6 +134,8 @@ func FilterByPaths(data *model.CoverageData, allowed map[string]struct{}) *model
 			CoveredLines: coveredLines,
 			Percent:      percent,
 		},
+		DiffSummary: data.DiffSummary,
+		IsDiffMode:  data.IsDiffMode,
 	}
 }
 
@@ -186,6 +188,8 @@ func FilterByRegex(data *model.CoverageData, patterns []*regexp.Regexp) *model.C
 			CoveredLines: coveredLines,
 			Percent:      percent,
 		},
+		DiffSummary: data.DiffSummary,
+		IsDiffMode:  data.IsDiffMode,
 	}
 }
 
@@ -312,4 +316,120 @@ func sortTree(node *model.TreeNode) {
 	for _, c := range node.Children {
 		sortTree(c)
 	}
+}
+
+// Diff state constants for line-by-line comparison.
+const (
+	DiffStateNoChange           = 0 // no statement or no diff
+	DiffStateNewlyCovered       = 1 // was uncovered, now covered
+	DiffStateNewlyUncovered     = 2 // was covered, now uncovered (regression)
+	DiffStateUnchangedCovered   = 3 // covered in both
+	DiffStateUnchangedUncovered = 4 // uncovered in both
+)
+
+// ComputeDiff compares base and current coverage data and returns a new
+// CoverageData with diff state information for each line.
+func ComputeDiff(base, current *model.CoverageData) *model.CoverageData {
+	// Build map of base files by path
+	baseFileMap := make(map[string]model.FileData)
+	for _, f := range base.Files {
+		baseFileMap[f.Path] = f
+	}
+
+	// Process each file in current
+	var resultFiles []model.FileData
+	var newlyCoveredTotal, newlyUncoveredTotal int
+
+	for i, currFile := range current.Files {
+		baseFile, inBase := baseFileMap[currFile.Path]
+
+		diffState := make([]int, len(currFile.Coverage))
+
+		if inBase {
+			diffState, newlyCoveredTotal, newlyUncoveredTotal = computeLineDiff(
+				baseFile.Coverage, currFile.Coverage,
+				newlyCoveredTotal, newlyUncoveredTotal,
+			)
+		} else {
+			// New file not in base: mark all statements as newly covered/uncovered
+			for idx, cov := range currFile.Coverage {
+				switch cov {
+				case 2: // covered
+					diffState[idx] = DiffStateNewlyCovered
+					newlyCoveredTotal++
+				case 1: // uncovered
+					diffState[idx] = DiffStateNewlyUncovered
+					newlyUncoveredTotal++
+				default:
+					diffState[idx] = DiffStateNoChange
+				}
+			}
+		}
+
+		resultFiles = append(resultFiles, model.FileData{
+			ID:        i,
+			Path:      currFile.Path,
+			Lines:     currFile.Lines,
+			Coverage:  currFile.Coverage,
+			DiffState: diffState,
+		})
+	}
+
+	tree := buildTree(resultFiles)
+
+	deltaPercent := current.Summary.Percent - base.Summary.Percent
+
+	return &model.CoverageData{
+		Files:   resultFiles,
+		Tree:    tree,
+		Summary: current.Summary,
+		DiffSummary: &model.DiffSummary{
+			NewlyCoveredLines:   newlyCoveredTotal,
+			NewlyUncoveredLines: newlyUncoveredTotal,
+			DeltaPercent:        deltaPercent,
+			BasePercent:         base.Summary.Percent,
+		},
+		IsDiffMode: true,
+	}
+}
+
+// computeLineDiff compares base and current coverage arrays line by line.
+func computeLineDiff(baseCov, currCov []int, newlyCovered, newlyUncovered int) ([]int, int, int) {
+	maxLen := len(currCov)
+	diffState := make([]int, maxLen)
+
+	for idx := 0; idx < maxLen; idx++ {
+		var baseVal int
+		if idx < len(baseCov) {
+			baseVal = baseCov[idx]
+		}
+		currVal := currCov[idx]
+
+		// No statement in current
+		if currVal == 0 {
+			diffState[idx] = DiffStateNoChange
+			continue
+		}
+
+		// Determine diff state
+		baseCovered := baseVal == 2
+		currCovered := currVal == 2
+
+		switch {
+		case !baseCovered && currCovered:
+			// Was uncovered (or no statement), now covered
+			diffState[idx] = DiffStateNewlyCovered
+			newlyCovered++
+		case baseCovered && !currCovered:
+			// Was covered, now uncovered (regression)
+			diffState[idx] = DiffStateNewlyUncovered
+			newlyUncovered++
+		case currCovered:
+			diffState[idx] = DiffStateUnchangedCovered
+		default:
+			diffState[idx] = DiffStateUnchangedUncovered
+		}
+	}
+
+	return diffState, newlyCovered, newlyUncovered
 }

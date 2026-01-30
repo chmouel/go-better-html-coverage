@@ -31,6 +31,7 @@ func (a *arrayFlags) Set(value string) error {
 func main() {
 	var (
 		profilePath     string
+		basePath        string
 		outputPath      string
 		badgePath       string
 		badgeThresholds string
@@ -43,6 +44,7 @@ func main() {
 	)
 
 	flag.StringVar(&profilePath, "profile", "coverage.out", "coverage profile path")
+	flag.StringVar(&basePath, "base", "", "base coverage profile for diff comparison")
 	flag.StringVar(&outputPath, "o", "-", "output HTML file")
 	flag.StringVar(&badgePath, "badge", "", "output SVG badge file")
 	flag.StringVar(&badgeThresholds, "badge-threshold", "40,70", "badge color thresholds (red,yellow) e.g., 40,70")
@@ -64,6 +66,16 @@ func main() {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error parsing coverage: %v\n", err)
 		os.Exit(1)
+	}
+
+	// Compute diff if base profile is provided
+	if basePath != "" {
+		baseData, err := parser.Parse(basePath, srcRoot)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error parsing base coverage: %v\n", err)
+			os.Exit(1)
+		}
+		data = parser.ComputeDiff(baseData, data)
 	}
 
 	if ref != "" {
@@ -96,10 +108,19 @@ func main() {
 
 	if !quiet {
 		fmt.Fprintf(os.Stderr, "Coverage report written to %s\n", outputPath)
-		fmt.Fprintf(os.Stderr, "Coverage: %.1f%% (%d/%d lines)\n",
-			data.Summary.Percent,
-			data.Summary.CoveredLines,
-			data.Summary.TotalLines)
+		if data.IsDiffMode && data.DiffSummary != nil {
+			fmt.Fprintf(os.Stderr, "Coverage: %.1f%% (Δ%+.1f%% from base)\n",
+				data.Summary.Percent,
+				data.DiffSummary.DeltaPercent)
+			fmt.Fprintf(os.Stderr, "Changes: +%d newly covered, -%d regressions\n",
+				data.DiffSummary.NewlyCoveredLines,
+				data.DiffSummary.NewlyUncoveredLines)
+		} else {
+			fmt.Fprintf(os.Stderr, "Coverage: %.1f%% (%d/%d lines)\n",
+				data.Summary.Percent,
+				data.Summary.CoveredLines,
+				data.Summary.TotalLines)
+		}
 	}
 
 	// Generate badge if requested
