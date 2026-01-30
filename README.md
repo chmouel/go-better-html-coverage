@@ -1,7 +1,7 @@
 # go-better-html-coverage
 
 ![Go](https://img.shields.io/badge/go-1.25%2B-blue)
-![Coverage](https://img.shields.io/badge/Coverage-70.6%25-brightgreen)
+![Coverage](https://img.shields.io/badge/Coverage-61.0%25-yellow)
 
 A better HTML Go Coverage - Single-file HTML coverage reports for Go.
 
