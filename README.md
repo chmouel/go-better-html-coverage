@@ -13,6 +13,7 @@ A better HTML Go Coverage - Single-file HTML coverage reports for Go.
 - File tree with search - `Ctrl+P`
 - In-file search with highlighting - `Ctrl+F`
 - Syntax highlighting.
+- Dark/Light background.
 - Deep linking to lines and ranges (click line numbers, shift+click for range)
 - Sort by coverage.
 - SVG badge generation for README/CI integration
