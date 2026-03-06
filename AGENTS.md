@@ -1,12 +1,9 @@
 ## Project
-
-A TUI for managing GIT worktrees.
 Read the README.md if you really need to know what this project is all about.
 
 ## Building
 
 - use `make build` for testing build errors.
-- if you ever add a new argument or flag to the cli then make sure to update the completion and README.md
 - Don't ever do commit unless you are being explicitely asked for it.
 - If you get asked to commit then use this rules:
   - Follow Conventional Commits 1.0.0.
@@ -26,12 +23,9 @@ Read the README.md if you really need to know what this project is all about.
   - Remove any overly casual Americanisms
   - Keep technical precision whilst maintaining readability
 
-## UI
-
-- UI colours must come from theme fields, avoid hardcoded colours in rendering.
 
 ## Before Finishing
 
-- Always Run `make sanity` which will run `golangci-lint`, `gofumpt`, and `go test`.
+- Always run `golangci-lint`, `gofumpt`, and `go test`.
 - Add tests for any new functionality.
 - Make sure coverage is top notch
