@@ -20,8 +20,6 @@ Read the README.md if you really need to know what this project is all about.
 
 - For any user-facing changes (features, options, keybindings, etc.), ensure you update:
   - `README.md`
-  - `lazyworktree.1` man page
-  - Internal help (`NewHelpScreen.helpText`)
 - Documentation and help string style guidelines:
   - Consistent British spelling.
   - Professional butler style: clear, helpful, dignified but not pompous
