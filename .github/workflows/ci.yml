@@ -26,7 +26,7 @@ jobs:
           go-version-file: "go.mod"
           cache: true
 
-      - uses: alexellis/setup-arkade@v3
+      - uses: alexellis/setup-arkade@v4
       - uses: alexellis/arkade-get@master
         with:
           golangci-lint: latest
